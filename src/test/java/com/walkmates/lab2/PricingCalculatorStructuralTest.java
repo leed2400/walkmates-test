@@ -87,4 +87,14 @@ class PricingCalculatorStructuralTest {
 
         assertThat(price).isEqualTo(0.00);
     }
+
+    @Test
+    @DisplayName("600 min DOG_WALK for a VERIFIED seeker = 800 base + 12% fee + 20 surcharge = 1075.20")
+    void overnightBookingIncludesSurcharge() {
+        Booking booking = new Booking("seeker-1", "listing-1", 600);
+
+        double price = pricing.priceFor(booking, listing(ListingType.DOG_WALK), seeker(TrustTier.VERIFIED));
+
+        assertThat(price).isEqualTo(1075.2);
+    }
 }
