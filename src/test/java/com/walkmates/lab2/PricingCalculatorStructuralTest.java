@@ -52,7 +52,7 @@ class PricingCalculatorStructuralTest {
 
         assertThrows(
                 IllegalArgumentException.class, () -> pricing.priceFor(
-                        booking, listing(ListingType.DOG_WALK), seeker(TrustTier.VERIFIED))
+                        booking, listing(ListingType.DOG_WALK), seeker(TrustTier.PRO_SITTER))
         );
     }
 
