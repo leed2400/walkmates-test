@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Lab 2, Part A — structural testing for {@link PricingCalculator} (FR-4.3).
@@ -44,8 +45,36 @@ class PricingCalculatorStructuralTest {
         assertThat(price).isEqualTo(89.60);
     }
 
-    // TODO (branch): a free SHELTER_VOLUNTEER listing always costs 0.00.
-    // TODO (branch): a clearly-overnight booking (e.g. 600 min) includes the 20% surcharge.
-    // TODO (BOUNDARY — this is the interesting one): a booking of exactly 480 minutes must NOT
-    //      be surcharged (FR-4.3 says strictly > 480). Write this test and see what happens.
+    @Test
+    @DisplayName("Null booking throws IllegalArgumentException")
+    void shouldRejectNullBooking() {
+        Booking booking = null;
+
+        assertThrows(
+                IllegalArgumentException.class, () -> pricing.priceFor(
+                        booking, listing(ListingType.DOG_WALK), seeker(TrustTier.VERIFIED))
+        );
+    }
+
+    @Test
+    @DisplayName("Null listing throws IllegalArgumentException")
+    void shouldRejectNullListing() {
+        Booking booking = new Booking("seeker-1", "listing-1", 60);
+
+        assertThrows(
+                IllegalArgumentException.class, () -> pricing.priceFor(
+                        booking, null, seeker(TrustTier.VERIFIED))
+        );
+    }
+
+    @Test
+    @DisplayName("Null seeker throws IllegalArgumentException")
+    void shouldRejectNullSeeker() {
+        Booking booking = new Booking("seeker-1", "listing-1", 60);
+
+        assertThrows(
+                IllegalArgumentException.class, () -> pricing.priceFor(
+                        booking, listing(ListingType.DOG_WALK), null)
+        );
+    }
 }
