@@ -77,4 +77,14 @@ class PricingCalculatorStructuralTest {
                         booking, listing(ListingType.DOG_WALK), null)
         );
     }
+
+    @Test
+    @DisplayName("60 min SHELTER_VOLUNTEER for a VERIFIED seeker = 0.00")
+    void shelterVolunteerIsAlwaysFree() {
+        Booking booking = new Booking("seeker-1", "listing-1", 60);
+
+        double price = pricing.priceFor(booking, listing(ListingType.SHELTER_VOLUNTEER), seeker(TrustTier.VERIFIED));
+
+        assertThat(price).isEqualTo(0.00);
+    }
 }
