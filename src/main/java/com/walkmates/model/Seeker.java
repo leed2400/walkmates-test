@@ -30,7 +30,7 @@ public class Seeker {
     // Letters (incl. Swedish), spaces, hyphens, apostrophes only (FR-1.1).
     private static final Pattern NAME = Pattern.compile("^[\\p{L} '\\-]+$");
     // Swedish 07XXXXXXXX (10 digits) or international +467XXXXXXXX (FR-1.1).
-    private static final Pattern PHONE = Pattern.compile("^(07\\d{8}|\\+467\\d{7})$");
+    private static final Pattern PHONE = Pattern.compile("^(07\\d{8}|\\+467\\d{8})$");
 
     private final String id;
     private String email;
