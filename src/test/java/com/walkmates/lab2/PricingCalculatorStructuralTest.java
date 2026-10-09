@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Lab 2, Part A — structural testing for {@link PricingCalculator} (FR-4.3).
@@ -44,8 +45,51 @@ class PricingCalculatorStructuralTest {
         assertThat(price).isEqualTo(89.60);
     }
 
-    // TODO (branch): a free SHELTER_VOLUNTEER listing always costs 0.00.
-    // TODO (branch): a clearly-overnight booking (e.g. 600 min) includes the 20% surcharge.
+    @Test
+    @DisplayName("Null booking throws IllegalArgumentException")
+    void shouldRejectNullBooking() {
+        assertThrows(IllegalArgumentException.class, () ->
+                pricing.priceFor(null, listing(ListingType.DOG_WALK), seeker(TrustTier.VERIFIED)));
+    }
+
+    @Test
+    @DisplayName("Null listing throws IllegalArgumentException")
+    void shouldRejectNullListing() {
+        Booking booking = new Booking("seeker-1", "listing-1", 60);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                pricing.priceFor(booking, null, seeker(TrustTier.VERIFIED)));
+    }
+
+    @Test
+    @DisplayName("Null seeker throws IllegalArgumentException")
+    void shouldRejectNullSeeker() {
+        Booking booking = new Booking("seeker-1", "listing-1", 60);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                pricing.priceFor(booking, listing(ListingType.DOG_WALK), null));
+    }
+
+    @Test
+    @DisplayName("60 min SHELTER_VOLUNTEER for a VERIFIED seeker = 0.00")
+    void shelterVolunteerIsAlwaysFree() {
+        Booking booking = new Booking("seeker-1", "listing-1", 60);
+
+        double price = pricing.priceFor(booking, listing(ListingType.SHELTER_VOLUNTEER), seeker(TrustTier.VERIFIED));
+
+        assertThat(price).isEqualTo(0.00);
+    }
+
+    @Test
+    @DisplayName("600 min DOG_WALK for a VERIFIED seeker = 800 base + 12% fee + 20% surcharge = 1075.20")
+    void overnightBookingIncludesSurcharge() {
+        Booking booking = new Booking("seeker-1", "listing-1", 600);
+
+        double price = pricing.priceFor(booking, listing(ListingType.DOG_WALK), seeker(TrustTier.VERIFIED));
+
+        assertThat(price).isEqualTo(1075.20);
+    }
+
     // TODO (BOUNDARY — this is the interesting one): a booking of exactly 480 minutes must NOT
     //      be surcharged (FR-4.3 says strictly > 480). Write this test and see what happens.
 }
