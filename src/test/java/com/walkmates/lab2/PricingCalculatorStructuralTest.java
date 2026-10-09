@@ -90,6 +90,13 @@ class PricingCalculatorStructuralTest {
         assertThat(price).isEqualTo(1075.20);
     }
 
-    // TODO (BOUNDARY — this is the interesting one): a booking of exactly 480 minutes must NOT
-    //      be surcharged (FR-4.3 says strictly > 480). Write this test and see what happens.
+    @Test
+    @DisplayName("480 min DOG_WALK for a VERIFIED seeker = 640 base + 12% fee = 716.80")
+    void bookingJustBelowSurchargeBoundaryDoesNotIncludeSurcharge() {
+        Booking booking = new Booking("seeker-1", "listing-1", 480);
+
+        double price = pricing.priceFor(booking, listing(ListingType.DOG_WALK), seeker(TrustTier.VERIFIED));
+
+        assertThat(price).isEqualTo(716.80);
+    }
 }

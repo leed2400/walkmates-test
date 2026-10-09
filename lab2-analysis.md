@@ -1,7 +1,7 @@
 # Lab 2 Analysis — WalkMates
 
 **Course:** Principles & Practices in Software Testing (DV033G)  
-**Pair:** Lena Edlind, Jakob Cederblad & Gemini CLI (AI Assistant)  
+**Pair:** Lena Edlind, Jakob Cederblad 
 
 ---
 
@@ -37,7 +37,7 @@
 
 ### Activity 3.2 — Raise Branch Coverage
 
-Test cases implemented to achieve 100% branch coverage:
+Test cases implemented for 100% branch coverage:
 1. `shouldRejectNullBooking()` — Asserts that `booking == null` throws an `IllegalArgumentException`.
 2. `shouldRejectNullListing()` — Asserts that `listing == null` throws an `IllegalArgumentException`.
 3. `shouldRejectNullSeeker()` — Asserts that `seeker == null` throws an `IllegalArgumentException`.
@@ -50,13 +50,44 @@ Test cases implemented to achieve 100% branch coverage:
 - **Line Coverage:** **100%** (15 of 15 lines covered, 0 missed) — *increased from 80%*
 - **Complexity (Cxty):** **100%** (8 of 8 covered, 0 missed) — *increased from 37%*
 
-All previously uncovered lines and branches (null guards, free listing path, and overnight surcharge branch) are now fully covered.
-
 ---
 
-### Activity 3.3 — Coverage ≠ Correctness
+### Activity 3.3 — Coverage ≠ Correctness (Boundary test at 480 minutes)
 
-*(To be filled in)*
+**Requirement (FR-4.3):**  
+The 20% overnight surcharge should **only** be applied when the booking duration is **strictly greater than 480 minutes** (`> 480`).
+
+- **Test Case:** A booking of exactly 480 minutes (8 hours) for a `DOG_WALK` (80 SEK/h) by a `VERIFIED` Seeker (12% platform fee).
+  - Expected: No overnight surcharge should be applied.
+  - Base price: $8 \times 80 = 640.00$ SEK.
+  - Surcharge: $0.00$ SEK.
+  - Fee (12%): $640.00 \times 0.12 = 76.80$ SEK.
+  - Expected Total Price: **716.80 SEK**.
+
+#### Observed Test Failure:
+```text
+[ERROR] Failures: 
+[ERROR]   PricingCalculatorStructuralTest.bookingJustBelowSurchargeBoundaryDoesNotIncludeSurcharge:100 
+expected: 716.8
+ but was: 860.16
+```
+
+#### Analysis — Why did 100% coverage miss this bug?
+This illustrates a classic "double error" between development and structural testing:
+1. **Developer fault:** The developer deviated from specification FR-4.3 by implementing `>=` instead of `>` (`booking.getDurationMinutes() >= OVERNIGHT_THRESHOLD_MINUTES`), thus applying the 20% surcharge at the exact boundary of 480 minutes.
+2. **Tester gap in structural testing:** In Activity 3.2, the branch was tested using a non-boundary value (600 minutes). Because 600 minutes successfully executed the surcharge calculation, JaCoCo marked the branch as 100% covered (green).
+
+The coverage tools only check if a line of code was run, not if the math or logic on that line is actually correct. Since our 600-minute test ran the surcharge code, JaCoCo was happy and gave us 100% branch coverage. But JaCoCo didn't know that the code used `>=` instead of `>` for the 480 limit. This shows that having 100% coverage doesn't mean your code is bug-free — you still need to test the exact boundary values yourself to catch mistakes like this.
+
+#### Resolution:
+Corrected line 49 in `PricingCalculator.java` from:
+```java
+if (booking.getDurationMinutes() >= OVERNIGHT_THRESHOLD_MINUTES)
+```
+to:
+```java
+if (booking.getDurationMinutes() > OVERNIGHT_THRESHOLD_MINUTES)
+```
 
 ---
 
