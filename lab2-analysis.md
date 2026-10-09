@@ -94,10 +94,36 @@ if (booking.getDurationMinutes() > OVERNIGHT_THRESHOLD_MINUTES)
 ## Part B — Test Optimization (M4)
 
 ### Activity 4.1 — Mutation Testing (PIT)
-*(To be filled in during Part B)*
+
+We ran PIT mutation testing to see how strong our tests are.
+
+#### 1. Results for PricingCalculator:
+- **Mutation Coverage:** 100% (14 out of 14 mutants killed).
+- PIT tried to break our code by changing the `>` sign to `>=` for the overnight limit. Because we added the exact 480-minute boundary test in Activity 3.3, our test failed exactly when it should, killing the mutant. This proves our tests are strong enough to catch off-by-one errors.
+
+#### 2. Surviving Mutants and the Booking Limit Bug:
+When looking at `BookingService.java`, PIT showed surviving mutants marked as `NO_COVERAGE`:
+- Line 71: `if (seekerActive > seeker.getMaxConcurrentBookings())`
+- Mutant: `changed conditional boundary`
+
+This points to the bug we found in Lab 1:
+- A `NEW` seeker is only allowed 1 active booking.
+- If they already have 1 active booking (`seekerActive = 1`), the code checks if `1 > 1`. This is false, so it doesn't stop them and they can make a second booking.
+- The code should use `>=` so that if you are already at the limit, you get blocked.
 
 ### Activity 4.2 — Component Isolation with Mocking
-*(To be filled in during Part B)*
+
+We used Mockito to isolate and test `SeekerService` and `BookingService` without needing a real database or real external payment gateway.
+
+#### 1. SeekerService (`SeekerServiceTest`):
+We tested the `topUp` method against the three possible payment outcomes:
+- **Success:** The payment gateway accepts the charge $\rightarrow$ the seeker's wallet balance increases, and the seeker is saved.
+- **Decline:** The payment gateway throws `PaymentException` $\rightarrow$ the wallet is not credited, and no save happens.
+- **Timeout:** The payment gateway throws `PaymentTimeoutException` $\rightarrow$ the wallet is not credited, and no save happens.
+
+#### 2. BookingService (`BookingServiceTest`):
+- **Confirmation notification:** We mocked all repositories and verified that `notifications.sendBookingConfirmed()` is called when a booking succeeds.
+- **Resolving the booking limit bug from Lab 1 (FR-4.4 Rule 2):** We added an equality boundary test for a `NEW` seeker who already has 1 active booking. With the original code (`seekerActive > max`), the condition `1 > 1` evaluated to false, allowing the second booking. After seeing our test catch this failure, we corrected the code in `BookingService.java` from `>` to `>=` so seekers at their limit are properly rejected.
 
 ### Activity 4.3 — Regression Selection & Prioritization
 *(To be filled in during Part B)*
