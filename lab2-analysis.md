@@ -125,5 +125,35 @@ We tested the `topUp` method against the three possible payment outcomes:
 - **Confirmation notification:** We mocked all repositories and verified that `notifications.sendBookingConfirmed()` is called when a booking succeeds.
 - **Resolving the booking limit bug from Lab 1 (FR-4.4 Rule 2):** We added an equality boundary test for a `NEW` seeker who already has 1 active booking. With the original code (`seekerActive > max`), the condition `1 > 1` evaluated to false, allowing the second booking. After seeing our test catch this failure, we corrected the code in `BookingService.java` from `>` to `>=` so seekers at their limit are properly rejected.
 
+#### Results in PIT After Adding Mock Tests:
+- **Total Project Mutations Killed:** Increased from 67 (35%) to **106 (55%)**.
+- **com.walkmates.service package:**
+  - `PricingCalculator`: 100% line coverage (15/15), 100% mutation coverage (14/14 killed).
+  - `BookingService`: 93% line coverage (39/42), 58% mutation coverage (11/19 killed). The boundary mutant on line 71 is now killed.
+  - `SeekerService`: 77% line coverage (10/13), 40% mutation coverage (2/5 killed).
+
 ### Activity 4.3 — Regression Selection & Prioritization
-*(To be filled in during Part B)*
+
+**Scenario:** A developer proposes a change on branch `feature/weekend-surcharge` which adds a weekend surcharge by editing `PricingCalculator.java`.
+
+Instead of running all 49 tests every time, we select and prioritize which tests actually need to run to get fast feedback (fail-fast).
+
+#### 1. Change-Relevant Tests (Must Re-run):
+1. **`PricingCalculatorStructuralTest` (Priority 1):**  
+   - **Why:** This directly tests `PricingCalculator`. These unit tests run in less than 20 milliseconds without any database or Spring context. If the new weekend math breaks existing pricing rules (like free listings or the 480-minute boundary), we will know almost instantly.
+2. **`BookingServiceTest` (Priority 2):**  
+   - **Why:** `BookingService` is the only service that calls `pricing.priceFor()`. It uses the price to check if the seeker has enough money and to charge their wallet. We need to make sure the service still works with the pricing calculator.
+
+#### 2. Wasteful Tests (Do NOT need to run for this change):
+- **`MatchControllerWebTest` (Biggest waste):** This test starts up the entire Spring Boot server and takes 3 to 5 seconds to run. It only tests the web controller for AI match explanations and has nothing to do with pricing calculations.
+- **`MatchExplanationServiceTest`:** Tests prompt generation for the AI LLM feature. Completely unrelated to pricing.
+- **`SeekerSpecBasedTest`:** 31 tests checking input validation (email format, Swedish phone numbers, etc.) in the `Seeker` class.
+- **`SeekerServiceTest`:** Tests adding money to a wallet and handling payment gateway errors. Does not calculate booking prices.
+- **`BeginnerFirstTest`:** Initial sanity test from day one.
+
+#### 3. Execution Order & Justification:
+We should run the tests in this order:
+1. `PricingCalculatorStructuralTest` (~20 ms)
+2. `BookingServiceTest` (~1 sec)
+
+**Justification:** By running the fastest, directly affected unit tests first, the developer gets feedback in under 1 second. Leaving out the slow Spring web tests saves both time and CI resources.
