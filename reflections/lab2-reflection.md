@@ -1,7 +1,7 @@
 # Lab Reflection — WalkMates
 **Lab:** 2
 **Pair:** Lena Edlind, Jakob Cederblad
-**Repo commit/tag:** https://github.com/leed2400/walkmates-test / TBD
+**Repo commit/tag:** https://github.com/leed2400/walkmates-test / 142ab10171a8e7bfea166761abf4092be9b88d33
 
 ---
 
