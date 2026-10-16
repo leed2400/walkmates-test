@@ -1,7 +1,7 @@
 # Lab Reflection — AI Ethics and Sustainability
 **Lab:** 4
 **Pair:** Lena Edlind, Jakob Cederblad
-**Repo commit/tag:** N/A
+**Repo commit/tag:** https://github.com/leed2400/walkmates-test/commit/2943100a713fdf37e8ac90659ed4bbeda87f2020
 
 ---
 
